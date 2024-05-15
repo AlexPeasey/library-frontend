@@ -9,8 +9,8 @@ const App = () => {
   return (
     <Router>
       <div>
-        <Link to="/authors">authors</Link>
-        <Link to="/books">books</Link>
+        <Link to="/authors">authors</Link><span> | </span>
+        <Link to="/books">books</Link><span> | </span>
         <Link to="/add">add book</Link>
       </div>
       <Routes>
@@ -19,7 +19,7 @@ const App = () => {
         <Route path="/books" element={<Books />} />
 
         <Route path="/add" element={<NewBook />} />
-        
+
       </Routes>
     </Router>
   );
