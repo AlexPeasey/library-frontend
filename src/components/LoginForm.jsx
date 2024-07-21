@@ -17,7 +17,7 @@ const LoginForm = ({ setError, setToken }) => {
       setToken(token);
       localStorage.setItem("library-user-token", token);
     }
-  });
+  }, [result.data]);
   const handleLogin = async (event) => {
     event.preventDefault();
 

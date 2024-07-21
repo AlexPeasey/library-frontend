@@ -3,8 +3,6 @@ import { GET_BOOKS } from "./queries";
 
 const Books = () => {
 
-
-
   const result = useQuery(GET_BOOKS)
 
   if (!result.data) return
@@ -23,7 +21,7 @@ const Books = () => {
           {result.data.allBooks.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author}</td>
+              <td>{a.author.name}</td>
               <td>{a.published}</td>
             </tr>
           ))}

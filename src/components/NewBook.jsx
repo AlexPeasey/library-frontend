@@ -1,18 +1,32 @@
 import { useState } from "react";
-import { useQuery, useMutation, gql } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { GET_BOOKS, ADD_BOOK, GET_AUTHORS } from "./queries";
+import { useNavigate } from 'react-router-dom';
 
-const NewBook = () => {
+
+const NewBook = ({ setError }) => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [published, setPublished] = useState("");
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
+  const navigateTo = useNavigate()
 
-
-
-  const [addBook, result] = useMutation(ADD_BOOK, {
-    refetchQueries: [{ query: GET_BOOKS }, { query: GET_AUTHORS }],
+  const [addBook] = useMutation(ADD_BOOK, {
+    onError: (error) => {
+      const messages = error.graphQLErrors.map((e) => e.message).join("\n");
+      setError(messages);
+    },
+    update: (cache, response) => {
+      cache.updateQuery({ query: GET_BOOKS }, ({ allBooks }) => {
+        return {
+          allBooks: allBooks.concat(response.data.addBook)
+        }
+      })
+    },
+    onCompleted: () => {
+      navigateTo('/books');
+    }
   });
 
   const submit = async (event) => {
