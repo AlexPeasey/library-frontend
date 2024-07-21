@@ -5,4 +5,10 @@
 .nav {
   text-transform: uppercase;
   letter-spacing: 0.05rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+body {
+  max-width: 44rem;
 }

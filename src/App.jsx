@@ -1,26 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Authors from "./components/Authors";
 import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import LoginForm from "./components/LoginForm";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
+import { useApolloClient } from "@apollo/client";
 
 const Notify = ({ error }) => {
   if (!error) {
     return null;
   }
-  return <div style={{color:"red"}}>{error}</div>;
+  return <div style={{ color: "red" }}>{error}</div>;
 };
 
 const App = () => {
   const [token, setToken] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); 
+  const client = useApolloClient()
+
+
 
   const notify = (message) => {
     setError(message);
     setTimeout(() => setError(null), 5000);
   };
+
+  useEffect(() => {
+    setToken(localStorage.getItem("library-user-token"));
+  }, [])
+
+  const logout = () => {
+    setToken(null)
+    localStorage.clear()
+    client.resetStore()
+  }
 
   if (!token) {
     return (
@@ -35,11 +49,16 @@ const App = () => {
   return (
     <Router>
       <div className="nav">
-        <Link to="/authors">authors</Link>
+        <div className="main-nav">
+        <Link to="/authors">Authors</Link>
         <span> | </span>
-        <Link to="/books">books</Link>
+        <Link to="/books">Books</Link>
         <span> | </span>
-        <Link to="/add">add book</Link>
+        <Link to="/add">Add book</Link>
+        </div>
+        <div className="side-nav">
+        {token ? <button onClick={logout}>logout</button> : null}
+        </div>
       </div>
       <Notify error={error}></Notify>
       <Routes>
@@ -47,7 +66,7 @@ const App = () => {
 
         <Route path="/books" element={<Books />} />
 
-        <Route path="/add" element={<NewBook setError={notify}/>} />
+        <Route path="/add" element={<NewBook setError={notify} />} />
       </Routes>
     </Router>
   );
