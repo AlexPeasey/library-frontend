@@ -12,3 +12,12 @@
 body {
   max-width: 44rem;
 }
+
+th {
+  text-align: left;
+  font-size: 1.125rem;
+}
+
+table {
+  border-spacing: 0.5rem;
+}

@@ -3,6 +3,7 @@ import Authors from "./components/Authors";
 import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import LoginForm from "./components/LoginForm";
+import Recommended from "./components/Recommended";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
 import { useApolloClient } from "@apollo/client";
@@ -16,10 +17,8 @@ const Notify = ({ error }) => {
 
 const App = () => {
   const [token, setToken] = useState(null);
-  const [error, setError] = useState(null); 
-  const client = useApolloClient()
-
-
+  const [error, setError] = useState(null);
+  const client = useApolloClient();
 
   const notify = (message) => {
     setError(message);
@@ -28,13 +27,13 @@ const App = () => {
 
   useEffect(() => {
     setToken(localStorage.getItem("library-user-token"));
-  }, [])
+  }, []);
 
   const logout = () => {
-    setToken(null)
-    localStorage.clear()
-    client.resetStore()
-  }
+    setToken(null);
+    localStorage.clear();
+    client.resetStore();
+  };
 
   if (!token) {
     return (
@@ -50,22 +49,22 @@ const App = () => {
     <Router>
       <div className="nav">
         <div className="main-nav">
-        <Link to="/authors">Authors</Link>
-        <span> | </span>
-        <Link to="/books">Books</Link>
-        <span> | </span>
-        <Link to="/add">Add book</Link>
+          <Link to="/authors">Authors</Link>
+          <span> | </span>
+          <Link to="/books">Books</Link>
+          <span> | </span>
+          <Link to="/add">Add book</Link>
+          <span> | </span>
+          <Link to="/recommended">Recommended for you</Link>
         </div>
-        <div className="side-nav">
-        {token ? <button onClick={logout}>logout</button> : null}
-        </div>
+        <div className="side-nav">{token ? <button onClick={logout}>logout</button> : null}</div>
       </div>
       <Notify error={error}></Notify>
       <Routes>
         <Route path="/authors" element={<Authors />} />
-
+        <Route path="/" element={<Books />} />
         <Route path="/books" element={<Books />} />
-
+        <Route path="/recommended" element={<Recommended />}></Route>
         <Route path="/add" element={<NewBook setError={notify} />} />
       </Routes>
     </Router>
