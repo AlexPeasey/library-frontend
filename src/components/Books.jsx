@@ -22,7 +22,11 @@ const Books = ({ userFaveGenre }) => {
             <th>Author</th>
             <th>Published</th>
           </tr>
-          {data.allBooks.map((a) => (
+          {data.allBooks.filter((book) => {
+            if (userFaveGenre) {
+              return book.genres.includes(userFaveGenre)
+            } else return book
+          }).map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>

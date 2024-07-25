@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { GET_BOOKS, ADD_BOOK, GET_AUTHORS } from "./queries";
-import { useNavigate } from 'react-router-dom';
-
+import { GET_BOOKS, ADD_BOOK } from "./queries";
+import { useNavigate } from "react-router-dom";
 
 const NewBook = ({ setError }) => {
   const [title, setTitle] = useState("");
@@ -10,30 +9,46 @@ const NewBook = ({ setError }) => {
   const [published, setPublished] = useState("");
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
-  const navigateTo = useNavigate()
+  const navigateTo = useNavigate();
 
   const [addBook] = useMutation(ADD_BOOK, {
     onError: (error) => {
-      const messages = error.graphQLErrors.map((e) => e.message).join("\n");
-      setError(messages);
+      console.error("Mutation error:", error);
+
+      if (error.networkError) {
+        console.error("Network error:", error.networkError);
+        setError(`Network error: ${error.networkError.message}`);
+      }
+
+      if (error.graphQLErrors) {
+        const messages = error.graphQLErrors.map((e) => e.message).join("\n");
+        console.error("GraphQL errors:", error.graphQLErrors);
+        setError(messages);
+      }
     },
-    update: (cache, response) => {
-      cache.updateQuery({ query: GET_BOOKS }, ({ allBooks }) => {
-        return {
-          allBooks: allBooks.concat(response.data.addBook)
+    update: (cache, { data: { addBook } }) => {
+      cache.updateQuery({ query: GET_BOOKS }, (data) => {
+        if (!data) {
+          data = { allBooks: [], allGenres: [] };
         }
-      })
+
+        // Extract the new genres from the added book
+        const newGenres = addBook.genres.filter((genre) => !data.allGenres.includes(genre));
+
+        return {
+          allBooks: data.allBooks.concat(addBook),
+          allGenres: data.allGenres.concat(newGenres),
+        };
+      });
     },
     onCompleted: () => {
-      navigateTo('/books');
-    }
+      navigateTo("/books");
+    },
   });
 
   const submit = async (event) => {
     event.preventDefault();
-
     addBook({ variables: { title, author, published: Number(published), genres } });
-
     setTitle("");
     setPublished("");
     setAuthor("");
