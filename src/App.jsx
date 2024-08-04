@@ -6,7 +6,8 @@ import LoginForm from "./components/LoginForm";
 import Recommended from "./components/Recommended";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
-import { useApolloClient } from "@apollo/client";
+import { useApolloClient, useSubscription } from "@apollo/client";
+import { BOOK_ADDED, GET_BOOKS } from "./components/queries";
 
 const Notify = ({ error }) => {
   if (!error) {
@@ -24,6 +25,19 @@ const App = () => {
     setError(message);
     setTimeout(() => setError(null), 5000);
   };
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data, client }) => {
+      const addedPerson = data.data.personAdded
+      notify(`${addedPerson.name} added`)
+
+      client.cache.updateQuery({ query: GET_BOOKS }, ({ allPersons }) => {
+        return {
+          allPersons: allPersons.concat(addedPerson),
+        }
+      })
+    }
+  })
 
   useEffect(() => {
     setToken(localStorage.getItem("library-user-token"));

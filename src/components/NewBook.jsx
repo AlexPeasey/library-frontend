@@ -27,11 +27,12 @@ const NewBook = ({ setError }) => {
       }
     },
     update: (cache, { data: { addBook } }) => {
+      console.log("updating...")
       cache.updateQuery({ query: GET_BOOKS }, (data) => {
         if (!data) {
           data = { allBooks: [], allGenres: [] };
         }
-
+        console.log("getting new genres...")
         // Extract the new genres from the added book
         const newGenres = addBook.genres.filter((genre) => !data.allGenres.includes(genre));
 
