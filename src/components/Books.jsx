@@ -1,15 +1,31 @@
-import { useQuery } from "@apollo/client";
-import { GET_BOOKS } from "./queries";
+import { useQuery, useMutation } from "@apollo/client";
+import { DELETE_BOOK, GET_BOOKS } from "./queries";
 import { useState } from "react";
 
-const Books = ({ userFaveGenre }) => {
+const Books = ({ userFaveGenre, setError }) => {
   const [genreFilter, setGenreFilter] = useState("");
+  const [deleteBook] = useMutation(DELETE_BOOK, {
+    onError: (error) => {
+      setError(error.message)
+    },
+    update: (cache, { data: { deleteBook } }) => {
+    },
+  });
 
-  const { data, error } = useQuery(GET_BOOKS, {
+
+  const { data, error, loading } = useQuery(GET_BOOKS, {
     variables: { genre: genreFilter },
   });
+
+  const handleDelete = (id) => {
+    deleteBook({variables: {id}})
+  }
+
+  if (loading) return <h2>Loading...</h2>
   if (error) console.log(error.message);
   if (!data) return;
+
+
 
 
   return (
@@ -21,6 +37,7 @@ const Books = ({ userFaveGenre }) => {
             <th>Book</th>
             <th>Author</th>
             <th>Published</th>
+            <th>Actions</th>
           </tr>
           {data.allBooks.filter((book) => {
             if (userFaveGenre) {
@@ -31,6 +48,7 @@ const Books = ({ userFaveGenre }) => {
               <td>{a.title}</td>
               <td>{a.author.name}</td>
               <td>{a.published}</td>
+              <td><button onClick={() => handleDelete(a.id)}>Delete</button></td>
             </tr>
           ))}
         </tbody>

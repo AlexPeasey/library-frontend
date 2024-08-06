@@ -8,6 +8,7 @@ const BOOK_DETAILS = gql`
     }
     published
     genres
+    id
   }
 `;
 
@@ -47,9 +48,18 @@ export const ADD_BOOK = gql`
       }
       published
       genres
+      id
     }
   }
 `;
+
+export const DELETE_BOOK = gql`
+mutation deleteBook($id: String!) {
+  deleteBook(id: $id) {
+    title
+  }
+}
+`
 
 export const GET_AUTHORS = gql`
   query {

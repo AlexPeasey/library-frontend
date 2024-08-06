@@ -3,6 +3,53 @@ import { useMutation } from "@apollo/client";
 import { GET_BOOKS, ADD_BOOK } from "./queries";
 import { useNavigate } from "react-router-dom";
 
+const updateCache = (cache, query, addedBook) => {
+  // Helper to eliminate duplicate books based on their IDs
+  const uniqById = (a) => {
+    let seen = new Set();
+    return a.filter((item) => {
+      let k = item.id;
+      return seen.has(k) ? false : seen.add(k);
+    });
+  };
+
+  try {
+    // Read the existing data from the cache
+    const data = cache.readQuery(query);
+
+    if (!data) {
+      console.log("No data found in cache for query:", query);
+      return;
+    }
+
+    const allBooks = data.allBooks || [];
+    const allGenres = data.allGenres || [];
+
+    console.log("Current books in cache:", allBooks);
+    console.log("Current genres in cache:", allGenres);
+    console.log("Added book:", addedBook);
+
+    // Extract the new genres from the added book
+    const newGenres = addedBook.genres.filter((genre) => !allGenres.includes(genre));
+
+    console.log("New genres to add:", newGenres);
+
+    // Write the updated data back to the cache
+    cache.writeQuery({
+      query: query.query,
+      variables: query.variables,
+      data: {
+        allBooks: uniqById(allBooks.concat(addedBook)),
+        allGenres: [...allGenres, ...newGenres],
+      },
+    });
+
+    console.log("Cache successfully updated with new book and genres.");
+  } catch (error) {
+    console.error("Error updating cache:", error);
+  }
+};
+
 const NewBook = ({ setError }) => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -12,35 +59,20 @@ const NewBook = ({ setError }) => {
   const navigateTo = useNavigate();
 
   const [addBook] = useMutation(ADD_BOOK, {
-    onError: (error) => {
-      console.error("Mutation error:", error);
-
-      if (error.networkError) {
-        console.error("Network error:", error.networkError);
-        setError(`Network error: ${error.networkError.message}`);
-      }
-
-      if (error.graphQLErrors) {
-        const messages = error.graphQLErrors.map((e) => e.message).join("\n");
-        console.error("GraphQL errors:", error.graphQLErrors);
-        setError(messages);
-      }
-    },
     update: (cache, { data: { addBook } }) => {
-      console.log("updating...")
-      cache.updateQuery({ query: GET_BOOKS }, (data) => {
-        if (!data) {
-          data = { allBooks: [], allGenres: [] };
-        }
-        console.log("getting new genres...")
-        // Extract the new genres from the added book
-        const newGenres = addBook.genres.filter((genre) => !data.allGenres.includes(genre));
-
-        return {
-          allBooks: data.allBooks.concat(addBook),
-          allGenres: data.allGenres.concat(newGenres),
-        };
+      const existingBooks = cache.readQuery({ query: GET_BOOKS, variables: { genre: "" } });
+      console.log(existingBooks)
+      cache.writeQuery({
+        query: GET_BOOKS,
+        variables: { genre: "" },
+        data: {
+          allBooks: [...existingBooks.allBooks, addBook],
+          allGenres: [...new Set([...existingBooks.allGenres, ...addBook.genres])],
+        },
       });
+    },
+    onError: (error) => {
+      console.log("Mutation error:", error.message);
     },
     onCompleted: () => {
       navigateTo("/books");
