@@ -6,8 +6,8 @@ import LoginForm from "./components/LoginForm";
 import Recommended from "./components/Recommended";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
-import { useApolloClient, useSubscription, useQuery, useMutation } from "@apollo/client";
-import { BOOK_ADDED, GET_BOOKS } from "./components/queries";
+import { useApolloClient, useSubscription } from "@apollo/client";
+import { BOOK_ADDED } from "./components/queries";
 
 const Notify = ({ error }) => {
   if (!error) {
@@ -29,6 +29,12 @@ const App = () => {
   useEffect(() => {
     setToken(localStorage.getItem("library-user-token"));
   }, []);
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      console.log(data)
+    }
+  })
 
   const logout = () => {
     setToken(null);

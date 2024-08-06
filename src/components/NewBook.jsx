@@ -3,7 +3,7 @@ import { useMutation } from "@apollo/client";
 import { GET_BOOKS, ADD_BOOK } from "./queries";
 import { useNavigate } from "react-router-dom";
 
-const updateCache = (cache, query, addedBook) => {
+const updateCache = (cache, query, book) => {
   // Helper to eliminate duplicate books based on their IDs
   const uniqById = (a) => {
     let seen = new Set();
@@ -22,26 +22,12 @@ const updateCache = (cache, query, addedBook) => {
       return;
     }
 
-    const allBooks = data.allBooks || [];
-    const allGenres = data.allGenres || [];
-
-    console.log("Current books in cache:", allBooks);
-    console.log("Current genres in cache:", allGenres);
-    console.log("Added book:", addedBook);
-
-    // Extract the new genres from the added book
-    const newGenres = addedBook.genres.filter((genre) => !allGenres.includes(genre));
-
-    console.log("New genres to add:", newGenres);
-
     // Write the updated data back to the cache
-    cache.writeQuery({
-      query: query.query,
-      variables: query.variables,
-      data: {
-        allBooks: uniqById(allBooks.concat(addedBook)),
-        allGenres: [...allGenres, ...newGenres],
-      },
+    cache.updateQuery(query, ({ allBooks }) => {
+      return {
+      allBooks: uniqById(allBooks.concat(book)),
+      allGenres: [...new Set(allBooks.concat(book).map(book => book.genres).flat())]
+      }
     });
 
     console.log("Cache successfully updated with new book and genres.");
@@ -60,8 +46,8 @@ const NewBook = ({ setError }) => {
 
   const [addBook] = useMutation(ADD_BOOK, {
     update: (cache, { data: { addBook } }) => {
-      const existingBooks = cache.readQuery({ query: GET_BOOKS, variables: { genre: "" } });
-      console.log(existingBooks)
+      updateCache(cache, { query: GET_BOOKS, variables: { genre: "" } }, addBook);
+      /* const existingBooks = cache.readQuery({ query: GET_BOOKS, variables: { genre: "" } });
       cache.writeQuery({
         query: GET_BOOKS,
         variables: { genre: "" },
@@ -69,16 +55,27 @@ const NewBook = ({ setError }) => {
           allBooks: [...existingBooks.allBooks, addBook],
           allGenres: [...new Set([...existingBooks.allGenres, ...addBook.genres])],
         },
-      });
+      }); */
     },
     onError: (error) => {
-      console.log("Mutation error:", error.message);
+      setError("Mutation error:", error.message);
     },
     onCompleted: () => {
       navigateTo("/books");
     },
   });
 
+  const submitTest = async (event) => {
+    event.preventDefault();
+    addBook({
+      variables: {
+        title: Math.floor(Math.random() * 1000000000).toString(),
+        author: Math.floor(Math.random() * 1000000000).toString(),
+        published: 2000,
+        genres: [Math.floor(Math.random() * 1000000000).toString()],
+      },
+    });
+  };
   const submit = async (event) => {
     event.preventDefault();
     addBook({ variables: { title, author, published: Number(published), genres } });
@@ -97,6 +94,9 @@ const NewBook = ({ setError }) => {
   return (
     <div>
       <h2>Add book</h2>
+      <form onSubmit={submitTest}>
+        <button>submit test book</button>
+      </form>
       <form onSubmit={submit}>
         <div>
           title
