@@ -6,8 +6,9 @@ import LoginForm from "./components/LoginForm";
 import Recommended from "./components/Recommended";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
-import { useQuery, useMutation, useSubscription, ApolloConsumer } from '@apollo/client'
-import { BOOK_ADDED } from "./components/queries";
+import { useQuery, useMutation, useSubscription, ApolloConsumer } from "@apollo/client";
+import { BOOK_ADDED, GET_BOOKS } from "./components/queries";
+import { updateCache } from "./components/NewBook";
 
 const Notify = ({ error }) => {
   if (!error) {
@@ -29,11 +30,13 @@ const App = () => {
     setToken(localStorage.getItem("library-user-token"));
   }, []);
 
-useSubscription(BOOK_ADDED, {
-    onData: ({ data }) => {
-      console.log(data)
-    }
-  })
+  useSubscription(BOOK_ADDED, {
+    onError: (error) => console.log(error),
+    onData: ({ data, client }) => {
+      const addedBook = data.data.bookAdded;
+      updateCache(client.cache, { query: GET_BOOKS, variables: { genre: "" } }, addedBook);
+    },
+  });
 
   const logout = (client) => {
     setToken(null);
@@ -63,8 +66,11 @@ useSubscription(BOOK_ADDED, {
           <span> | </span>
           <Link to="/recommended">Recommended for you</Link>
         </div>
-        <div className="side-nav">{token ? 
-           <ApolloConsumer>{client => (<button onClick={() => logout(client)}>logout</button> )}</ApolloConsumer> : null}</div>
+        <div className="side-nav">
+          {token ? (
+            <ApolloConsumer>{(client) => <button onClick={() => logout(client)}>logout</button>}</ApolloConsumer>
+          ) : null}
+        </div>
       </div>
       <Notify error={error}></Notify>
       <Routes>

@@ -3,7 +3,7 @@ import { useMutation } from "@apollo/client";
 import { GET_BOOKS, ADD_BOOK } from "./queries";
 import { useNavigate } from "react-router-dom";
 
-const updateCache = (cache, query, book) => {
+export const updateCache = (cache, query, book) => {
   // Helper to eliminate duplicate books based on their IDs
   const uniqById = (a) => {
     let seen = new Set();
