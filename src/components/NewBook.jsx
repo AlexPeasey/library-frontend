@@ -16,7 +16,6 @@ const updateCache = (cache, query, book) => {
   try {
     // Read the existing data from the cache
     const data = cache.readQuery(query);
-
     if (!data) {
       console.log("No data found in cache for query:", query);
       return;
@@ -25,12 +24,17 @@ const updateCache = (cache, query, book) => {
     // Write the updated data back to the cache
     cache.updateQuery(query, ({ allBooks }) => {
       return {
-      allBooks: uniqById(allBooks.concat(book)),
-      allGenres: [...new Set(allBooks.concat(book).map(book => book.genres).flat())]
-      }
+        allBooks: uniqById(allBooks.concat(book)),
+        allGenres: [
+          ...new Set(
+            allBooks
+              .concat(book)
+              .map((book) => book.genres)
+              .flat()
+          ),
+        ],
+      };
     });
-
-    console.log("Cache successfully updated with new book and genres.");
   } catch (error) {
     console.error("Error updating cache:", error);
   }
@@ -47,15 +51,6 @@ const NewBook = ({ setError }) => {
   const [addBook] = useMutation(ADD_BOOK, {
     update: (cache, { data: { addBook } }) => {
       updateCache(cache, { query: GET_BOOKS, variables: { genre: "" } }, addBook);
-      /* const existingBooks = cache.readQuery({ query: GET_BOOKS, variables: { genre: "" } });
-      cache.writeQuery({
-        query: GET_BOOKS,
-        variables: { genre: "" },
-        data: {
-          allBooks: [...existingBooks.allBooks, addBook],
-          allGenres: [...new Set([...existingBooks.allGenres, ...addBook.genres])],
-        },
-      }); */
     },
     onError: (error) => {
       setError("Mutation error:", error.message);

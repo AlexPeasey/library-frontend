@@ -39,13 +39,10 @@ const client = new ApolloClient({
       Query: {
         fields: {
           allBooks: {
+            keyArgs: ["genre"], // Specify arguments that differentiate cached objects
             merge(existing = [], incoming) {
-              return [...existing, ...incoming];
-            },
-          },
-          allGenres: {
-            merge(existing = [], incoming) {
-              return Array.from(new Set([...existing, ...incoming]));
+              // Return the incoming array as the new value
+              return incoming;
             },
           },
         },

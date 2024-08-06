@@ -6,7 +6,7 @@ import LoginForm from "./components/LoginForm";
 import Recommended from "./components/Recommended";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./styles.css";
-import { useApolloClient, useSubscription } from "@apollo/client";
+import { useQuery, useMutation, useSubscription, ApolloConsumer } from '@apollo/client'
 import { BOOK_ADDED } from "./components/queries";
 
 const Notify = ({ error }) => {
@@ -19,7 +19,6 @@ const Notify = ({ error }) => {
 const App = () => {
   const [token, setToken] = useState(null);
   const [error, setError] = useState(null);
-  const client = useApolloClient();
 
   const notify = (message) => {
     setError(message);
@@ -36,7 +35,7 @@ const App = () => {
     }
   })
 
-  const logout = () => {
+  const logout = (client) => {
     setToken(null);
     localStorage.clear();
     client.resetStore();
@@ -64,7 +63,8 @@ const App = () => {
           <span> | </span>
           <Link to="/recommended">Recommended for you</Link>
         </div>
-        <div className="side-nav">{token ? <button onClick={logout}>logout</button> : null}</div>
+        <div className="side-nav">{token ? 
+           <ApolloConsumer>{client => (<button onClick={() => logout(client)}>logout</button> )}</ApolloConsumer> : null}</div>
       </div>
       <Notify error={error}></Notify>
       <Routes>
