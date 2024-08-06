@@ -23,7 +23,7 @@ const Authors = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
-
+  console.log(data)
   return (
     <div>
       <h2>Authors</h2>
@@ -38,7 +38,7 @@ const Authors = () => {
             <tr key={a.name}>
               <td>{a.name}</td>
               <td>{a.born}</td>
-              <td>{a.bookCount}</td>
+              <td>{a.books.length}</td>
             </tr>
           ))}
         </tbody>

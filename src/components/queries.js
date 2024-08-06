@@ -66,7 +66,9 @@ export const GET_AUTHORS = gql`
     allAuthors {
       name
       born
-      bookCount
+      books {
+        title
+      }
     }
   }
 `;
