@@ -29,7 +29,7 @@ const App = () => {
     setToken(localStorage.getItem("library-user-token"));
   }, []);
 
-  useSubscription(BOOK_ADDED, {
+useSubscription(BOOK_ADDED, {
     onData: ({ data }) => {
       console.log(data)
     }
